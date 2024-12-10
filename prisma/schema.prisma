@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  password     String
+  isAdmin      Boolean  @default(false)
+  surveys      Survey[] 
+  responses    Response[]
+  assignments  Assignment[]
+}
+
+model Survey {
+  id           Int         @id @default(autoincrement())
+  title        String
+  description  String
+  ownerId      Int
+  startDate    DateTime
+  endDate      DateTime?
+  state        String      @default("draft")
+  owner        User        @relation(fields: [ownerId], references: [id])
+  questions    Question[]
+  responses    Response[]
+  assignments  Assignment[]
+}
+
+model Question {
+  id           Int            @id @default(autoincrement())
+  surveyId     Int
+  text         String
+  questionType String @default("TEXT") 
+  options      String?         
+  timeLimit    Int?            
+  survey       Survey          @relation(fields: [surveyId], references: [id])
+  responses    Response[]
+}
+
+model Response {
+  id           Int            @id @default(autoincrement())
+  surveyId     Int
+  userId       Int
+  questionId   Int
+  answer      String          
+  survey       Survey          @relation(fields: [surveyId], references: [id])
+  user         User            @relation(fields: [userId], references: [id])
+  question    Question        @relation(fields: [questionId], references: [id])
+}
+
+model Assignment {
+  id           Int            @id @default(autoincrement())
+  surveyId     Int
+  userId       Int
+  survey       Survey          @relation(fields: [surveyId], references: [id])
+  user         User            @relation(fields: [userId], references: [id])
+}
